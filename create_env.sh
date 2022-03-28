@@ -32,7 +32,7 @@ LOCAL_ROOT=${GLOB_CESMROOT}/$ACR/
 LOCAL_CESMROOT=${LOCAL_ROOT}/cesm
 LOCAL_CIMEROOT=${LOCAL_CESMROOT}/cime
 LOCAL_CASEROOT=${LOCAL_CIMEROOT}/${ACR}_case
-LOCAL_CASEOPROOT=${LOCAL_CIMEROOT}/${ACR}_case
+LOCAL_CASEOPROOT=${LOCAL_CIMEROOT}/${ACR}_case/oproot
 LOCAL_WRFROOT=${LOCAL_CESMROOT}/components/wrf
 LOCAL_NEMOROOT=${LOCAL_CESMROOT}/components/nemo
 LOCAL_DLR=${LOCAL_CIMEROOT}/din_loc_root
@@ -109,6 +109,11 @@ cd $LOCAL_CASEROOT
 ./xmlchange DIN_LOC_ROOT=${LOCAL_DLR}
 echo "[createEnv] == Do not forget to populate ${LOCAL_DLR} !!!"
 
+echo "[createEnv] == Creating and setting CASEOPROOT to ${LOCAL_CASEOPROOT} ..."
+mkdir -p ${LOCAL_CASEOPROOT}
+cd $LOCAL_CASEROOT
+./xmlchange CIME_OUTPUT_ROOT=${LOCAL_CASEOPROOT}
+
 
 ########################################################
 #
@@ -127,6 +132,25 @@ echo "bsub -R \"span[ptile=1]\" -Is -q s_medium -P 0419 -J ${ACR}_build \"\$SCRI
 echo "#!/bin/bash" >> $LOCAL_CASEROOT/bsub_run.sh
 echo "SCRIPT_EXE=${LOCAL_CASEROOT}/case.submit" >> $LOCAL_CASEROOT/bsub_run.sh
 echo "bsub -R \"span[ptile=1]\" -Is -q s_medium -P 0419 -J ${ACR}_run \"\$SCRIPT_EXE --verbose\"" >> $LOCAL_CASEROOT/bsub_run.sh
+
+
+########################################################
+#
+# Create git branches
+#
+########################################################
+
+# Create a new branch for WRF
+cd $LOCAL_WRFROOT
+git checkout -b $ACR
+
+# Create a new branch for NEMO
+cd $LOCAL_NEMOROOT
+git checkout -b $ACR
+
+# Create a new branch for CIME
+cd $LOCAL_CIMEROOT
+git checkout -b $ACR
 
 
 ########################################################
